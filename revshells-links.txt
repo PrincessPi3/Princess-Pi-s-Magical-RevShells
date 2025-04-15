@@ -1,0 +1,5 @@
+https://swisskyrepo.github.io/InternalAllTheThings/cheatsheets/shell-reverse-cheatsheet/
+
+https://www.revshells.com
+
+https://pentestmonkey.net/cheat-sheet/shells/reverse-shell-cheat-sheet

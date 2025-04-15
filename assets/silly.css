@@ -1,0 +1,80 @@
+/*
+colors:
+    * light pink background color: #FFDDDD
+    * dark purple text color: #6B16A0
+    * purple (links): #A020F0
+    * blue (hovers): #0000FF
+    * nearly white pale pink for text inputs: #FFEEEE
+    * lighter purple (buttons): #DCA4FF
+*/
+
+@font-face {
+    font-family: ComicCodedRegular;
+    src: url(ComicCodeRegular.woff)
+}
+
+body {
+    font-family: ComicCodeRegular, "Comic Sans MS", "Comic Sans", monospace;
+    font-size: 1.1em;
+    background-color: #FFDDDD;
+    background-image: url(princesspi-bkg.png);
+    background-repeat: no-repeat;
+    color: #6b16a0;
+    margin-left: 3em;
+}
+
+a:link {
+    color: #A020F0;
+}
+
+a:hover {
+    color: #0000FF;
+}
+
+textarea {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+label {
+    text-decoration: underline;
+}
+
+label:focus, label:hover {
+    text-decoration: none;
+}
+
+input[type=text],select,textarea { 
+    border: 2px solid #A020F0;
+    background-color: #FFEEEE;
+}
+
+input[type=text]:focus,select:focus,textarea:focus {
+    border: 2px solid #0000FF;
+}
+
+input[type=button], input[type=submit] {
+    background-color: #dca4ff;
+    font-family: ComicCodeRegular, "Comic Sans MS", "Comic Sans", monospace;
+}
+
+input[type=button].marginalized {
+    /*margin-left: 50px;*/
+    margin-top: 10px;
+}
+
+input[type=button]:hover, input[type=submit]:hover, input[type=button]:focus, input[type=submit]:focus {
+    border: 2px solid #0000FF;
+}
+
+.label {
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
+
+.emphasis {
+    font-weight: bold;
+    font-size: 1.2em;
+}

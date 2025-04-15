@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Princess Pi's Rev Shell Gen! ~ Sillytime! :tbh_bounces:</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/fapple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/ffavicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+    <link rel="manifest" href="assets/site.webmanifest">
+    <link rel="stylesheet" href="assets/silly.css">
+</head>
+<body>
+    <h1>Princess Pi's Silly PowerShell Silly!</h1>
+    <span class="emphasis">Whatchu wanna do~ uwu</span><br>
+    <label for="revshell">Generate Reverse Shell~</label>
+    <input type="radio" id="revshell" name="pssilly" onclick="swapMode('revshell')"><br>
+
+    <label for="psencode">Encode Custom Powershell~</label>
+    <input type="radio" id="psencode" name="pssilly" onclick="swapMode('psencode')"><br>
+
+    <br><hr><br>
+
+    <div id="revshellgencontainer" class="hidden">
+    <h1>Princess Pi's Rev Shell Gen!</h1>
+    <label for="host">Host:</label>
+    <input type="text" value="192.168.1.1" id="host">
+
+    <label for="port">Port:</label>
+    <input type="text" name="port" id="port" value="853" size="7"><br>
+
+    <label for="rstype">Type:</label>
+    <select name="rstype" id="rstype">
+        <option value="0">PowerShell #0</option>
+        <option value="1">PowerShell #1</option>
+        <option value="2">PowerShell #2</option>
+        <option value="3">PowerShell TLS #3</option>
+    </select>
+
+    <label for="listener">Listener:</label>
+    <select name="listenertype" id="listenertype">
+        <option value="0">nc Cleartext TCP</option>
+        <option value="1">nc Cleartext UDP</option>
+        <option value="2">ncat Cleartext TCP</option>
+        <option value="3">ncat TLS</option>
+        <option value="4">openssl TLS</option>
+        <option value="5">msfconsole Cleartext TCP</option>
+        <option value="6">msfconsole Cleartext UDP</option>
+    </select><br>
+
+    <!--
+    <label for="shell">Shell:</label>
+    <input type="text" name="shell" value="powershell">
+    -->
+
+    <a href="javascript:revealConfig()">advanced</a><br>
+
+    <div class="hidden" id="advancedConfig">
+        <br>
+        <span class="emphasis">Advanced Settings:</span><br>
+        <span class="emphasis">Random Variable Name Lengths:</span><br>
+        <label for="minLen">Min:</label>
+        <input type="text" value="2" id="minLen" size="3">
+        <label for="maxLen">Max:</label>
+        <input type="text" value="7" id="maxLen" size="3">
+        <!-- add mangle options here eventually -->
+    </div>
+
+    <input type="button" value="Go, Baby, Go!" onclick="genShell()" class="marginalized"></input>
+    </div>
+
+    <div id="encodepscontainer" class="hidden">
+        <h1>Encode PowerShell Commands~</h1>
+        <label for="psInput">PowerShell Code:</label><br>
+        <textarea rows="10" cols="40" id="psInput"></textarea><br>
+        <input type="button" value="Go, Encode, Go!" class="marginalized" onclick="encodePS(document.getElementById('psInput').value, false)"><br>
+    </div>
+
+    <div id="encodedDiv" class="hidden">
+        <br><hr><br>
+        <label for="hiddenOutput">Encoded:</label><br>
+        <textarea rows="10" cols="40" id="hiddenOutput"></textarea><br>
+        <a href="javascript:copyCmd('hiddenOutput', 'copyCmdDone')">Copy to Clipboard</a> <span id="copyCmdDone" class="hidden">Copied!</span>
+    </div>
+    <div id="unencodedDiv" class="hidden">
+        <br>
+        <label for="hiddenUnencoded">Unencoded:</label><br>
+        <textarea rows="10" cols="40" id="hiddenUnencoded"></textarea><br>
+        <a href="javascript:copyCmd('hiddenUnencoded', 'copyCmdUnencoded')">Copy to Clipboard</a> <span id="copyCmdUnencoded" class="hidden">Copied!</span>
+    </div>
+
+    <div id="listenerDiv" class="hidden">
+        <br>
+        <label for="listener">Listener:</label><br>
+        <textarea rows="10" cols="40" id="listener">sudo nc -lvnp 853</textarea><br>
+        <a href="javascript:copyCmd('listener', 'copyListenerDone')">Copy to Clipboard</a> <span id="copyListenerDone" class="hidden">Copied!</span>
+    </div>
+
+    <script src="assets/silly.js"></script>
+</body>
+</html>
