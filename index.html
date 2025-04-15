@@ -54,7 +54,7 @@
     <input type="text" name="shell" value="powershell">
     -->
 
-    <a href="javascript:revealConfig()">advanced</a><br>
+    <a href="javascript:showId('advancedConfig')">advanced</a><br>
 
     <div class="hidden" id="advancedConfig">
         <br>
@@ -72,41 +72,43 @@
 
     <div id="encodepscontainer" class="hidden">
         <h1>Encode PowerShell Commands~</h1>
-        <label for="psInput">PowerShell Code:</label><br>
+        <label for="psInput">PowerShell Code</label><br>
         <textarea rows="10" cols="40" id="psInput"></textarea><br>
         <input type="button" value="Go, Encode, Go!" class="marginalized" onclick="encodePS(document.getElementById('psInput').value, false)"><br>
     </div>
 
-    <div id="encodedDiv" class="hidden">
-        <br><hr><br>
-        <label for="hiddenOutput">Encoded:</label><br>
-        <textarea rows="10" cols="40" id="hiddenOutput"></textarea><br>
-        <a href="javascript:copyCmd('hiddenOutput', 'copyCmdDone')">Copy to Clipboard</a> <span id="copyCmdDone" class="hidden">Copied!</span>
-    </div>
     <div id="unencodedDiv" class="hidden">
         <br>
-        <label for="hiddenUnencoded">Unencoded:</label><br>
+        <label for="hiddenUnencoded">Randomized Vars <a href="javascript:doHelp('randomvars');" class="help">?</a></label><br>
         <textarea rows="10" cols="40" id="hiddenUnencoded"></textarea><br>
         <a href="javascript:copyCmd('hiddenUnencoded', 'copyCmdUnencoded')">Copy to Clipboard</a> <span id="copyCmdUnencoded" class="hidden">Copied!</span>
     </div>
 
+    <div id="encodedDiv" class="hidden">
+        <br>
+        <label for="hiddenOutput">Encoded <a href="javascript:doHelp('encoded');" class="help">?</a></label><br>
+        <textarea rows="10" cols="40" id="hiddenOutput"></textarea><br>
+        <a href="javascript:copyCmd('hiddenOutput', 'copyCmdDone')">Copy to Clipboard</a> <span id="copyCmdDone" class="hidden">Copied!</span>
+    </div>
+
+
     <div id="mangledDiv" class="hidden">
         <br>
-        <label for="mangledpayload">Mangled:</label><br>
+        <label for="mangledpayload">Mangled <a href="javascript:doHelp('mangled');" class="help">?</a></label><br>
         <textarea rows="10" cols="40" id="mangledpayload"></textarea><br>
         <a href="javascript:copyCmd('mangledpayload', 'copyCmdMangled')">Copy to Clipboard</a> <span id="copyCmdMangled" class="hidden">Copied!</span>
     </div>
 
     <div id="mangledEncodedDiv" class="hidden">
         <br>
-        <label for="mangledencodedpayload">Mangled &amp Encoded:</label><br>
+        <label for="mangledencodedpayload">Mangled &amp Encoded <a href="javascript:doHelp('mangledencoded');" class="help">?</a></label><br>
         <textarea rows="10" cols="40" id="mangledencodedpayload"></textarea><br>
         <a href="javascript:copyCmd('mangledencodedpayload', 'copyCmdMangledEncoded')">Copy to Clipboard</a> <span id="copyCmdMangledEncoded" class="hidden">Copied!</span>
     </div>
 
     <div id="listenerDiv" class="hidden">
         <br>
-        <label for="listener">Listener:</label><br>
+        <label for="listener">Listener <a href="javascript:doHelp('listener');" class="help">?</a></label><br>
         <textarea rows="10" cols="40" id="listener">sudo nc -lvnp 853</textarea><br>
         <a href="javascript:copyCmd('listener', 'copyListenerDone')">Copy to Clipboard</a> <span id="copyListenerDone" class="hidden">Copied!</span>
     </div>

